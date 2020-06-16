@@ -1,0 +1,12 @@
+---
+- hosts: all
+  tasks:
+    - name: Stand up EC2
+      ec2:
+        key_name: dk-master
+        instance_type: t2.micro
+        image: ami-09d95fab7fff3776c
+        wait: no
+        instance_tags:
+          role: test
+        vpc_subnet_id: subnet-02bc26737e42d7620
