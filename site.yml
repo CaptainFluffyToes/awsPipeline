@@ -1,5 +1,5 @@
 ---
-- hosts: AWS_Instance_Primary
+- hosts: all
   tasks:
     - name: start Hello-world
       shell: |
