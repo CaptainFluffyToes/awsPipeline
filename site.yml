@@ -1,14 +1,6 @@
 ---
-- hosts: all
+- hosts: AWS_Instance_primary
   tasks:
-    - name: Stand up EC2
-      ec2:
-        key_name: dk-master
-        aws_access_key: "{{ AWS_ACCESS_KEY_ID }}"
-        aws_secret_key: "{{ AWS_SECRET_ACCESS_KEY }}"
-        instance_type: t2.micro
-        image: ami-09d95fab7fff3776c
-        wait: no
-        instance_tags:
-          role: test
-        vpc_subnet_id: subnet-02bc26737e42d7620
+    - name: start Hello-world
+      shell: |
+        docker container run -d nginx
