@@ -2,5 +2,6 @@
 - hosts: all
   tasks:
     - name: start Hello-world
-      shell: |
-        docker container run -d nginx
+      docker_container:
+        name: nginx
+        image: nginx
