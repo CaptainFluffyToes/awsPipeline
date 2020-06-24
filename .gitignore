@@ -4,3 +4,4 @@ terraform.tfstate.backup
 .terraform/plugins/darwin_amd64/lock.json
 .DS_Store
 terraform/aws/.terraform*
+terraform/azure/.terraform*
