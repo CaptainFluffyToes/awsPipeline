@@ -3,3 +3,4 @@ terraform.tfstate.backup
 .terraform/plugins/darwin_amd64/terraform-provider-aws_v2.66.0_x4
 .terraform/plugins/darwin_amd64/lock.json
 .DS_Store
+terraform/aws/.terraform*
