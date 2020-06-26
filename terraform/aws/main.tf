@@ -95,7 +95,9 @@ resource "aws_route_table" "cyberark_route_internal" {
   }
 
   tags = {
-    "CyberArk" = "Hydration"
+    Name    = var.name,
+    role    = var.role,
+    company = var.company
   }
 }
 
@@ -109,17 +111,17 @@ resource "aws_route_table_association" "ca_route_external" {
   route_table_id = aws_route_table.cyberark_route_external.id
 }
 
-resource "aws_security_group" "cyberark_hydration" {
+resource "aws_security_group" "cyberark_sg" {
   name        = "cyberark_hydration"
   description = "Allow traffic for Cyberark environment"
   vpc_id      = aws_vpc.cyberark_vpc.id
 
   ingress {
-    description = "TLS from VPC"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = [aws_vpc.cyberark_vpc.cidr_block]
+    description = "Everything from external subnet"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = [var.subnet_external_cidr]
   }
 
   egress {
@@ -155,7 +157,7 @@ resource "aws_launch_template" "docker_nodes" {
   }
   network_interfaces {
     delete_on_termination = true
-    security_groups       = [aws_security_group.cyberark_hydration.id]
+    security_groups       = [aws_security_group.cyberark_sg.id]
     subnet_id             = aws_subnet.cyberark_internal.id
   }
 
