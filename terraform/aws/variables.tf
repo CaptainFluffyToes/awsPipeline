@@ -37,18 +37,3 @@ variable "company" {
   type    = string
   default = "cyberark"
 }
-
-variable "extra_tags" {
-  type = list(object({
-    Name     = string
-    poc_role = string
-    company  = string
-  }))
-  default = [
-    {
-      Name     = "cyberark_hydration"
-      poc_role = "hydration"
-      company  = "cyberark"
-    }
-  ]
-}
