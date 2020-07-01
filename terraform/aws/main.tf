@@ -2,6 +2,11 @@ provider "aws" {
   region = var.region
 }
 
+resource "aws_key_pair" "deployer" {
+  key_name   = var.ssh_key_name
+  public_key = var.aws_pub_key
+}
+
 resource "aws_vpc" "cyberark_vpc" {
   cidr_block = var.vpc_cidr
 
@@ -150,7 +155,7 @@ resource "aws_launch_template" "docker_nodes" {
   }
   image_id      = "ami-09d95fab7fff3776c"
   instance_type = "t2.medium"
-  key_name      = "dk-master"
+  key_name      = var.ssh_key_name
   metadata_options {
     http_endpoint = "enabled"
     http_tokens   = "optional"
@@ -171,5 +176,165 @@ resource "aws_launch_template" "docker_nodes" {
       role    = var.role,
       company = var.company
     }
+  }
+}
+
+resource "aws_launch_template" "conjur_master" {
+  name        = "conjur_master"
+  description = "This will install docker on amazon linux 2 machines. It will also install python3 and pip3. It will also start conjur cluster machines"
+  block_device_mappings {
+    device_name = "/dev/sda1"
+    ebs {
+      volume_size           = 30
+      delete_on_termination = true
+      volume_type           = "standard"
+    }
+  }
+  image_id      = "ami-09d95fab7fff3776c"
+  instance_type = var.conjur_master_instance_type
+  key_name      = var.ssh_key_name
+  metadata_options {
+    http_endpoint = "enabled"
+    http_tokens   = "optional"
+  }
+  network_interfaces {
+    delete_on_termination = true
+    security_groups       = [aws_security_group.cyberark_sg.id]
+    subnet_id             = aws_subnet.cyberark_internal.id
+  }
+
+  user_data = filebase64("${path.module}/user_data.sh")
+
+  tag_specifications {
+    resource_type = "instance"
+
+    tags = {
+      Name        = var.name,
+      role        = var.role,
+      company     = var.company,
+      clusterrole = "leader"
+    }
+  }
+}
+
+resource "aws_launch_template" "conjur_standbys" {
+  name        = "conjur_standbys"
+  description = "This will install docker on amazon linux 2 machines. It will also install python3 and pip3. It will also start conjur cluster machines"
+  block_device_mappings {
+    device_name = "/dev/sda1"
+    ebs {
+      volume_size           = 30
+      delete_on_termination = true
+      volume_type           = "standard"
+    }
+  }
+  image_id      = "ami-09d95fab7fff3776c"
+  instance_type = var.conjur_standby_instance_type
+  key_name      = var.ssh_key_name
+  metadata_options {
+    http_endpoint = "enabled"
+    http_tokens   = "optional"
+  }
+  network_interfaces {
+    delete_on_termination = true
+    security_groups       = [aws_security_group.cyberark_sg.id]
+    subnet_id             = aws_subnet.cyberark_internal.id
+  }
+
+  user_data = filebase64("${path.module}/user_data.sh")
+
+  tag_specifications {
+    resource_type = "instance"
+
+    tags = {
+      Name        = var.name,
+      role        = var.role,
+      company     = var.company,
+      clusterrole = "standby"
+    }
+  }
+}
+
+resource "aws_launch_template" "conjur_followers" {
+  name        = "conjur_followers"
+  description = "This will install docker on amazon linux 2 machines. It will also install python3 and pip3. It will also start conjur cluster machines"
+  block_device_mappings {
+    device_name = "/dev/sda1"
+    ebs {
+      volume_size           = 30
+      delete_on_termination = true
+      volume_type           = "standard"
+    }
+  }
+  image_id      = "ami-09d95fab7fff3776c"
+  instance_type = var.conjur_follower_instance_type
+  key_name      = var.ssh_key_name
+  metadata_options {
+    http_endpoint = "enabled"
+    http_tokens   = "optional"
+  }
+  network_interfaces {
+    delete_on_termination = true
+    security_groups       = [aws_security_group.cyberark_sg.id]
+    subnet_id             = aws_subnet.cyberark_internal.id
+  }
+
+  user_data = filebase64("${path.module}/user_data.sh")
+
+  tag_specifications {
+    resource_type = "instance"
+
+    tags = {
+      Name        = var.name,
+      role        = var.role,
+      company     = var.company,
+      clusterrole = "follower"
+    }
+  }
+}
+
+resource "aws_autoscaling_group" "conjur_master" {
+  desired_capacity = 1
+  max_size         = 1
+  min_size         = 1
+
+  launch_template {
+    id      = aws_launch_template.conjur_master.id
+    version = "$Latest"
+  }
+}
+
+resource "aws_autoscaling_group" "conjur_standbys" {
+  desired_capacity = var.standby_instance_count
+  max_size         = var.standby_instance_count
+  min_size         = 1
+
+  launch_template {
+    id      = aws_launch_template.conjur_standbys.id
+    version = "$Latest"
+  }
+}
+
+resource "aws_autoscaling_group" "conjur_followers" {
+  desired_capacity = var.follower_instance_count
+  max_size         = var.follower_instance_count
+  min_size         = 1
+
+  launch_template {
+    id      = aws_launch_template.conjur_followers.id
+    version = "$Latest"
+  }
+}
+
+resource "aws_instance" "ansible_tower" {
+  ami           = var.ansible_ami
+  instance_type = var.ansible_instance_type
+  key_name      = var.ssh_key_name
+
+  tags = {
+    Name        = var.name,
+    role        = var.role,
+    company     = var.company,
+    clusterrole = "ansible"
   }
 }
