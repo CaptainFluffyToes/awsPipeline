@@ -23,11 +23,6 @@ variable "subnet_internal_cidr" {
   default = "172.86.21.32/27"
 }
 
-variable "aws_key_name" {
-  type    = string
-  default = "dk-master"
-}
-
 variable "name" {
   type    = string
   default = "cyberark_demo"
