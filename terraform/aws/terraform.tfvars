@@ -10,6 +10,14 @@ subnet_internal_cidr = "172.86.21.32/27"
 
 name = "cyberark_hydration"
 
+ansible_name = "ansible"
+
+conjur_master_name = "conjur_master"
+
+conjur_follower_name = "conjur_follower"
+
+conjur_standby_name = "conjur_standby"
+
 role = "hydration"
 
 company = "cyberark"
@@ -22,7 +30,7 @@ conjur_standby_instance_type = "t2.medium"
 
 conjur_follower_instance_type = "t2.medium"
 
-standby_instance_count = 3
+standby_instance_count = 2
 
 follower_instance_count = 1
 

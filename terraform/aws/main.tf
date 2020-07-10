@@ -181,7 +181,7 @@ resource "aws_launch_template" "docker_nodes" {
 
 resource "aws_launch_template" "conjur_master" {
   name        = "conjur_master"
-  description = "This will install docker on amazon linux 2 machines. It will also install python3 and pip3. It will also start conjur cluster machines"
+  description = "This will install docker and then configure a conjur master"
   block_device_mappings {
     device_name = "/dev/sda1"
     ebs {
@@ -209,7 +209,7 @@ resource "aws_launch_template" "conjur_master" {
     resource_type = "instance"
 
     tags = {
-      Name        = var.name,
+      Name        = join("_", [var.name, var.conjur_master_name]),
       role        = var.role,
       company     = var.company,
       clusterrole = "leader"
@@ -219,7 +219,7 @@ resource "aws_launch_template" "conjur_master" {
 
 resource "aws_launch_template" "conjur_standbys" {
   name        = "conjur_standbys"
-  description = "This will install docker on amazon linux 2 machines. It will also install python3 and pip3. It will also start conjur cluster machines"
+  description = "This will install docker and then start up a standby conjur instance"
   block_device_mappings {
     device_name = "/dev/sda1"
     ebs {
@@ -247,7 +247,7 @@ resource "aws_launch_template" "conjur_standbys" {
     resource_type = "instance"
 
     tags = {
-      Name        = var.name,
+      Name        = join("_", [var.name, var.conjur_standby_name]),
       role        = var.role,
       company     = var.company,
       clusterrole = "standby"
@@ -257,7 +257,7 @@ resource "aws_launch_template" "conjur_standbys" {
 
 resource "aws_launch_template" "conjur_followers" {
   name        = "conjur_followers"
-  description = "This will install docker on amazon linux 2 machines. It will also install python3 and pip3. It will also start conjur cluster machines"
+  description = "This will install docker and then start up a follower"
   block_device_mappings {
     device_name = "/dev/sda1"
     ebs {
@@ -285,7 +285,7 @@ resource "aws_launch_template" "conjur_followers" {
     resource_type = "instance"
 
     tags = {
-      Name        = var.name,
+      Name        = join("_", [var.name, var.conjur_follower_name]),
       role        = var.role,
       company     = var.company,
       clusterrole = "follower"
@@ -332,7 +332,7 @@ resource "aws_instance" "ansible_tower" {
   key_name      = var.ssh_key_name
 
   tags = {
-    Name        = var.name,
+    Name        = join("_", [var.name, var.ansible_name]),
     role        = var.role,
     company     = var.company,
     clusterrole = "ansible"
