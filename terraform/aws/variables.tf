@@ -60,7 +60,7 @@ variable "company" {
 
 variable "ssh_key_name" {
   type    = string
-  default = "dk-master"
+  default = "hydration_access"
 }
 
 variable "conjur_master_instance_type" {

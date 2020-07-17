@@ -22,7 +22,7 @@ role = "hydration"
 
 company = "cyberark"
 
-ssh_key_name = "dk-master"
+ssh_key_name = "hydration_access"
 
 conjur_master_instance_type = "t2.medium"
 
