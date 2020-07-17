@@ -80,12 +80,12 @@ variable "conjur_follower_instance_type" {
 
 variable "standby_instance_count" {
   type    = number
-  default = 2
+  default = 0
 }
 
 variable "follower_instance_count" {
   type    = number
-  default = 1
+  default = 0
 }
 
 variable "ansible_ami" {

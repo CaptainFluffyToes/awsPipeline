@@ -296,7 +296,7 @@ resource "aws_launch_template" "conjur_followers" {
 resource "aws_autoscaling_group" "conjur_master" {
   desired_capacity = 1
   max_size         = 1
-  min_size         = 1
+  min_size         = 0
 
   launch_template {
     id      = aws_launch_template.conjur_master.id
@@ -307,7 +307,7 @@ resource "aws_autoscaling_group" "conjur_master" {
 resource "aws_autoscaling_group" "conjur_standbys" {
   desired_capacity = var.standby_instance_count
   max_size         = var.standby_instance_count
-  min_size         = 1
+  min_size         = 0
 
   launch_template {
     id      = aws_launch_template.conjur_standbys.id
@@ -318,7 +318,7 @@ resource "aws_autoscaling_group" "conjur_standbys" {
 resource "aws_autoscaling_group" "conjur_followers" {
   desired_capacity = var.follower_instance_count
   max_size         = var.follower_instance_count
-  min_size         = 1
+  min_size         = 0
 
   launch_template {
     id      = aws_launch_template.conjur_followers.id
