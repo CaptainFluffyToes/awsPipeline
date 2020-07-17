@@ -331,6 +331,10 @@ resource "aws_instance" "ansible_tower" {
   instance_type = var.ansible_instance_type
   key_name      = var.ssh_key_name
 
+  root_block_device {
+    delete_on_termination = true
+  }
+
   tags = {
     Name        = join("_", [var.name, var.ansible_name]),
     role        = var.role,

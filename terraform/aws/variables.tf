@@ -29,22 +29,22 @@ variable "name" {
 }
 
 variable "ansible_name" {
-  type = string
+  type    = string
   default = "ansible"
 }
 
 variable "conjur_master_name" {
-  type = string
+  type    = string
   default = "conjur_master"
 }
 
 variable "conjur_follower_name" {
-  type = string
+  type    = string
   default = "conjur_follower"
 }
 
 variable "conjur_standby_name" {
-  type = string
+  type    = string
   default = "conjur_standby"
 }
 
