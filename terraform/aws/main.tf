@@ -146,11 +146,9 @@ resource "aws_launch_template" "docker_nodes" {
   name        = "docker_nodes"
   description = "This will install docker on amazon linux 2 machines. It will also install python3 and pip3."
   block_device_mappings {
-    device_name = "/dev/sda1"
+    device_name = "/dev/xvda"
     ebs {
-      volume_size           = 30
-      delete_on_termination = true
-      volume_type           = "standard"
+      volume_size = 40
     }
   }
   image_id      = "ami-09d95fab7fff3776c"
@@ -183,11 +181,9 @@ resource "aws_launch_template" "conjur_master" {
   name        = "conjur_master"
   description = "This will install docker and then configure a conjur master"
   block_device_mappings {
-    device_name = "/dev/sda1"
+    device_name = "/dev/xvda"
     ebs {
-      volume_size           = 30
-      delete_on_termination = true
-      volume_type           = "standard"
+      volume_size = 40
     }
   }
   image_id      = "ami-09d95fab7fff3776c"
@@ -221,11 +217,9 @@ resource "aws_launch_template" "conjur_standbys" {
   name        = "conjur_standbys"
   description = "This will install docker and then start up a standby conjur instance"
   block_device_mappings {
-    device_name = "/dev/sda1"
+    device_name = "/dev/xvda"
     ebs {
-      volume_size           = 30
-      delete_on_termination = true
-      volume_type           = "standard"
+      volume_size = 40
     }
   }
   image_id      = "ami-09d95fab7fff3776c"
@@ -259,11 +253,9 @@ resource "aws_launch_template" "conjur_followers" {
   name        = "conjur_followers"
   description = "This will install docker and then start up a follower"
   block_device_mappings {
-    device_name = "/dev/sda1"
+    device_name = "/dev/xvda"
     ebs {
-      volume_size           = 30
-      delete_on_termination = true
-      volume_type           = "standard"
+      volume_size = 40
     }
   }
   image_id      = "ami-09d95fab7fff3776c"
@@ -294,8 +286,8 @@ resource "aws_launch_template" "conjur_followers" {
 }
 
 resource "aws_autoscaling_group" "conjur_master" {
-  desired_capacity = 1
-  max_size         = 1
+  desired_capacity = var.master_instance_count
+  max_size         = var.master_instance_count
   min_size         = 0
 
   launch_template {

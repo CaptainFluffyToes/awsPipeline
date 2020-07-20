@@ -30,6 +30,8 @@ conjur_standby_instance_type = "t2.medium"
 
 conjur_follower_instance_type = "t2.medium"
 
+master_instance_count = 1
+
 standby_instance_count = 2
 
 follower_instance_count = 1

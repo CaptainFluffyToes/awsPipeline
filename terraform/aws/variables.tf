@@ -78,6 +78,11 @@ variable "conjur_follower_instance_type" {
   default = "t2.medium"
 }
 
+variable "master_instance_count" {
+  type    = number
+  default = 0
+}
+
 variable "standby_instance_count" {
   type    = number
   default = 0
