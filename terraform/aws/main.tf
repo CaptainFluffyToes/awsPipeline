@@ -164,7 +164,7 @@ resource "aws_launch_template" "docker_nodes" {
     subnet_id             = aws_subnet.cyberark_internal.id
   }
 
-  user_data = filebase64("${path.module}/user_data.sh")
+  user_data = filebase64("${path.module}/base_configuration.sh")
 
   tag_specifications {
     resource_type = "instance"
@@ -199,7 +199,7 @@ resource "aws_launch_template" "conjur_master" {
     subnet_id             = aws_subnet.cyberark_internal.id
   }
 
-  user_data = filebase64("${path.module}/user_data.sh")
+  user_data = filebase64("${path.module}/base_configuration.sh")
 
   tag_specifications {
     resource_type = "instance"
@@ -235,7 +235,7 @@ resource "aws_launch_template" "conjur_standbys" {
     subnet_id             = aws_subnet.cyberark_internal.id
   }
 
-  user_data = filebase64("${path.module}/user_data.sh")
+  user_data = filebase64("${path.module}/base_configuration.sh")
 
   tag_specifications {
     resource_type = "instance"
@@ -271,7 +271,7 @@ resource "aws_launch_template" "conjur_followers" {
     subnet_id             = aws_subnet.cyberark_internal.id
   }
 
-  user_data = filebase64("${path.module}/user_data.sh")
+  user_data = filebase64("${path.module}/userdata/base_configuration.sh")
 
   tag_specifications {
     resource_type = "instance"
