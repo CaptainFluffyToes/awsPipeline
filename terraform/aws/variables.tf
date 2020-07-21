@@ -95,7 +95,7 @@ variable "follower_instance_count" {
 
 variable "ansible_ami" {
   type    = string
-  default = "ami-037c4c158e6e397eb"
+  default = "ami-06cf02a98a61f9f5e"
 }
 
 variable "ansible_instance_type" {

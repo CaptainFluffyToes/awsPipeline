@@ -43,7 +43,7 @@ resource "aws_subnet" "cyberark_external" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name    = var.name,
+    Name    = join("_", [var.name, "external"]),
     role    = var.role,
     company = var.company
   }
@@ -57,7 +57,7 @@ resource "aws_subnet" "cyberark_internal" {
   map_public_ip_on_launch = false
 
   tags = {
-    Name    = var.name,
+    Name    = join("_", [var.name, "internal"]),
     role    = var.role,
     company = var.company
   }
@@ -85,7 +85,7 @@ resource "aws_route_table" "cyberark_route_external" {
   }
 
   tags = {
-    Name    = var.name,
+    Name    = join("_", [var.name, "external"]),
     role    = var.role,
     company = var.company
   }
@@ -100,7 +100,7 @@ resource "aws_route_table" "cyberark_route_internal" {
   }
 
   tags = {
-    Name    = var.name,
+    Name    = join("_", [var.name, "internal"]),
     role    = var.role,
     company = var.company
   }
@@ -164,7 +164,7 @@ resource "aws_launch_template" "docker_nodes" {
     subnet_id             = aws_subnet.cyberark_internal.id
   }
 
-  user_data = filebase64("${path.module}/base_configuration.sh")
+  user_data = filebase64("${path.module}/userdata/base_configuration.sh")
 
   tag_specifications {
     resource_type = "instance"
@@ -199,7 +199,7 @@ resource "aws_launch_template" "conjur_master" {
     subnet_id             = aws_subnet.cyberark_internal.id
   }
 
-  user_data = filebase64("${path.module}/base_configuration.sh")
+  user_data = filebase64("${path.module}/userdata/base_configuration.sh")
 
   tag_specifications {
     resource_type = "instance"
@@ -235,7 +235,7 @@ resource "aws_launch_template" "conjur_standbys" {
     subnet_id             = aws_subnet.cyberark_internal.id
   }
 
-  user_data = filebase64("${path.module}/base_configuration.sh")
+  user_data = filebase64("${path.module}/userdata/base_configuration.sh")
 
   tag_specifications {
     resource_type = "instance"
@@ -325,7 +325,13 @@ resource "aws_instance" "ansible_tower" {
 
   root_block_device {
     delete_on_termination = true
+    volume_size           = 40
+    volume_type           = "standard"
   }
+
+  subnet_id        = aws_subnet.cyberark_external.id
+  security_groups  = [aws_security_group.cyberark_sg.id]
+  user_data_base64 = filebase64("${path.module}/userdata/install_ansible.sh")
 
   tags = {
     Name        = join("_", [var.name, var.ansible_name]),
