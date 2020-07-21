@@ -126,7 +126,23 @@ resource "aws_security_group" "cyberark_sg" {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = [var.subnet_external_cidr, var.local_cidr]
+    cidr_blocks = [var.subnet_external_cidr]
+  }
+
+  ingress {
+    description = "SSH from Local IP"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = [var.local_cidr]
+  }
+
+  ingress {
+    description = "HTTPS from Local IP"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = [var.local_cidr]
   }
 
   egress {
