@@ -102,3 +102,8 @@ variable "ansible_instance_type" {
   type    = string
   default = "t2.medium"
 }
+
+variable "local_cidr" {
+  type    = string
+  default = "71.184.77.90/32"
+}

@@ -39,3 +39,5 @@ follower_instance_count = 1
 ansible_ami = "ami-06cf02a98a61f9f5e"
 
 ansible_instance_type = "t2.medium"
+
+local_cidr = "71.184.77.90/32"
