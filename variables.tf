@@ -25,7 +25,7 @@ variable "subnet_internal_cidr" {
 
 variable "name" {
   type    = string
-  default = "cyberark_demo"
+  default = "cyberark_hydration"
 }
 
 variable "ansible_name" {
