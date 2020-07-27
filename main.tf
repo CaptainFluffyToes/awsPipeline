@@ -1,3 +1,15 @@
+terraform {
+  backend "remote" {
+    # The name of your Terraform Cloud organization.
+    organization = "captainfluffytoes"
+
+    # The name of the Terraform Cloud workspace to store Terraform state files in.
+    workspaces {
+      name = "awsPipeline"
+    }
+  }
+}
+
 provider "aws" {
   region = var.region
 }
