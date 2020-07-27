@@ -16,7 +16,7 @@ provider "aws" {
 
 resource "aws_key_pair" "deployer" {
   key_name   = var.ssh_key_name
-  public_key = file("~/.ssh/id_rsa.pub")
+  public_key = var.aws_pub_key
 }
 
 resource "aws_vpc" "cyberark_vpc" {
