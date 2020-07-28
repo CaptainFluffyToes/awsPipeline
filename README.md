@@ -22,3 +22,4 @@ EC2 Instances
     Conjur Write Node
     Conjur Standbys
     Conjur Read Nodes
+    K8s Leader
