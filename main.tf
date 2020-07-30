@@ -10,15 +10,18 @@ terraform {
   }
 }
 
+#aws provider
 provider "aws" {
   region = var.region
 }
 
+#creates keypair used by all of the instances that will be created
 resource "aws_key_pair" "deployer" {
   key_name   = var.ssh_key_name
   public_key = var.aws_pub_key
 }
 
+#create VPC specific for demo environment
 resource "aws_vpc" "cyberark_vpc" {
   cidr_block = var.vpc_cidr
 
@@ -29,6 +32,7 @@ resource "aws_vpc" "cyberark_vpc" {
   }
 }
 
+#create internet gateway specific for demo environment
 resource "aws_internet_gateway" "cyberark_igw" {
   vpc_id = aws_vpc.cyberark_vpc.id
 
@@ -37,8 +41,11 @@ resource "aws_internet_gateway" "cyberark_igw" {
     role    = var.role,
     company = var.company
   }
+
+  depends_on = [aws_vpc.cyberark_vpc]
 }
 
+#assign an elastic IP for demo environment external access
 resource "aws_eip" "cyberark_eip" {
   vpc = true
 
@@ -47,8 +54,11 @@ resource "aws_eip" "cyberark_eip" {
     role    = var.role,
     company = var.company
   }
+
+  depends_on = [aws_vpc.cyberark_vpc]
 }
 
+#create a subnet for instances to get external internet access. This automatically assigns an EIP to the instance
 resource "aws_subnet" "cyberark_external" {
   vpc_id                  = aws_vpc.cyberark_vpc.id
   cidr_block              = var.subnet_external_cidr
@@ -56,20 +66,6 @@ resource "aws_subnet" "cyberark_external" {
 
   tags = {
     Name    = join("_", [var.name, "external"]),
-    role    = var.role,
-    company = var.company
-  }
-
-  depends_on = [aws_internet_gateway.cyberark_igw]
-}
-
-resource "aws_subnet" "cyberark_internal" {
-  vpc_id                  = aws_vpc.cyberark_vpc.id
-  cidr_block              = var.subnet_internal_cidr
-  map_public_ip_on_launch = false
-
-  tags = {
-    Name    = join("_", [var.name, "internal"]),
     role    = var.role,
     company = var.company
   }
@@ -86,7 +82,26 @@ resource "aws_nat_gateway" "cyberark_ngw" {
     role    = var.role,
     company = var.company
   }
+
+  depends_on = [aws_subnet.cyberark_external]
 }
+
+
+#create a subnet for internal communication
+resource "aws_subnet" "cyberark_internal" {
+  vpc_id                  = aws_vpc.cyberark_vpc.id
+  cidr_block              = var.subnet_internal_cidr
+  map_public_ip_on_launch = false
+
+  tags = {
+    Name    = join("_", [var.name, "internal"]),
+    role    = var.role,
+    company = var.company
+  }
+
+  depends_on = [aws_nat_gateway.cyberark_ngw]
+}
+
 
 resource "aws_route_table" "cyberark_route_external" {
   vpc_id = aws_vpc.cyberark_vpc.id
@@ -101,6 +116,8 @@ resource "aws_route_table" "cyberark_route_external" {
     role    = var.role,
     company = var.company
   }
+
+  depends_on = [aws_internet_gateway.cyberark_igw]
 }
 
 resource "aws_route_table" "cyberark_route_internal" {
@@ -116,16 +133,22 @@ resource "aws_route_table" "cyberark_route_internal" {
     role    = var.role,
     company = var.company
   }
+
+  depends_on = [aws_nat_gateway.cyberark_ngw]
 }
 
 resource "aws_route_table_association" "ca_route_internal" {
   subnet_id      = aws_subnet.cyberark_internal.id
   route_table_id = aws_route_table.cyberark_route_internal.id
+
+  depends_on = [aws_subnet.cyberark_internal, aws_route_table.cyberark_route_internal]
 }
 
 resource "aws_route_table_association" "ca_route_external" {
   subnet_id      = aws_subnet.cyberark_external.id
   route_table_id = aws_route_table.cyberark_route_external.id
+
+  depends_on = [aws_subnet.cyberark_external, aws_route_table.cyberark_route_external]
 }
 
 resource "aws_security_group" "cyberark_sg" {
@@ -168,6 +191,8 @@ resource "aws_security_group" "cyberark_sg" {
     "Name"     = "cyberark_hydration",
     "CyberArk" = "Hydration"
   }
+
+  depends_on = [aws_vpc.cyberark_vpc]
 }
 
 resource "aws_launch_template" "docker_nodes" {
