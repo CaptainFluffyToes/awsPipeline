@@ -217,7 +217,7 @@ resource "aws_launch_template" "docker_nodes" {
     subnet_id             = aws_subnet.cyberark_internal.id
   }
 
-  user_data = filebase64("${path.module}/userdata/base_configuration.sh")
+  user_data = filebase64("${path.module}/files/userdata/base_configuration.sh")
 
   tag_specifications {
     resource_type = "instance"
@@ -252,7 +252,7 @@ resource "aws_launch_template" "conjur_master" {
     subnet_id             = aws_subnet.cyberark_internal.id
   }
 
-  user_data = filebase64("${path.module}/userdata/base_configuration.sh")
+  user_data = filebase64("${path.module}/files/userdata/base_configuration.sh")
 
   tag_specifications {
     resource_type = "instance"
@@ -288,7 +288,7 @@ resource "aws_launch_template" "conjur_standbys" {
     subnet_id             = aws_subnet.cyberark_internal.id
   }
 
-  user_data = filebase64("${path.module}/userdata/base_configuration.sh")
+  user_data = filebase64("${path.module}/files/userdata/base_configuration.sh")
 
   tag_specifications {
     resource_type = "instance"
@@ -324,7 +324,7 @@ resource "aws_launch_template" "conjur_followers" {
     subnet_id             = aws_subnet.cyberark_internal.id
   }
 
-  user_data = filebase64("${path.module}/userdata/base_configuration.sh")
+  user_data = filebase64("${path.module}/files/userdata/base_configuration.sh")
 
   tag_specifications {
     resource_type = "instance"
@@ -371,6 +371,13 @@ resource "aws_autoscaling_group" "conjur_followers" {
   }
 }
 
+resource "aws_iam_policy" "ansible_access_policy" {
+  name        = join("_", [var.name, "policy"])
+  path        = "/"
+  description = "This policy allows ansible to see the rest of the instances"
+  policy      = file("${path.module}/files/iam/ec2access.json")
+}
+
 resource "aws_instance" "ansible_tower" {
   ami           = var.ansible_ami
   instance_type = var.ansible_instance_type
@@ -384,7 +391,7 @@ resource "aws_instance" "ansible_tower" {
 
   subnet_id        = aws_subnet.cyberark_external.id
   security_groups  = [aws_security_group.cyberark_sg.id]
-  user_data_base64 = filebase64("${path.module}/userdata/install_ansible.sh")
+  user_data_base64 = filebase64("${path.module}/files/userdata/install_ansible.sh")
 
   tags = {
     Name        = join("_", [var.name, var.ansible_name]),
