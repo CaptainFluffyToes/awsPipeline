@@ -375,7 +375,35 @@ resource "aws_iam_policy" "ansible_access_policy" {
   name        = join("_", [var.name, "policy"])
   path        = "/"
   description = "This policy allows ansible to see the rest of the instances"
-  policy      = "file("${path.module}/files/iam/ec2access.json")"
+  policy      = file("${path.module}/files/iam/ec2access.json")
+}
+
+resource "aws_iam_role" "ansible_access_role" {
+  name               = join("_", [var.name, "role"])
+  assume_role_policy = file("${path.module}/files/iam/assumerolepolicy.json")
+
+  tags = {
+    Name    = join("_", [var.name, "role"]),
+    role    = var.role,
+    company = var.company
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "ansible_role_policy_attachment" {
+  role       = aws_iam_role.ansible_access_role.name
+  policy_arn = aws_iam_policy.ansible_access_policy.arn
+
+  depends_on = [
+    aws_iam_role.ansible_access_role,
+    aws_iam_policy.ansible_access_policy
+  ]
+}
+
+resource "aws_iam_instance_profile" "ansible_profile" {
+  name = join("_", [var.name, "profile"])
+  role = aws_iam_role.ansible_access_role.name
+
+  depends_on = [aws_iam_role_policy_attachment.ansible_role_policy_attachment]
 }
 
 resource "aws_instance" "ansible_tower" {
@@ -389,9 +417,10 @@ resource "aws_instance" "ansible_tower" {
     volume_type           = "standard"
   }
 
-  subnet_id        = aws_subnet.cyberark_external.id
-  security_groups  = [aws_security_group.cyberark_sg.id]
-  user_data_base64 = filebase64("${path.module}/files/userdata/install_ansible.sh")
+  subnet_id            = aws_subnet.cyberark_external.id
+  security_groups      = [aws_security_group.cyberark_sg.id]
+  iam_instance_profile = aws_iam_instance_profile.ansible_profile.name
+  user_data_base64     = filebase64("${path.module}/files/userdata/install_ansible.sh")
 
   tags = {
     Name        = join("_", [var.name, var.ansible_name]),
@@ -399,4 +428,10 @@ resource "aws_instance" "ansible_tower" {
     company     = var.company,
     clusterrole = "ansible"
   }
+
+  depends_on = [
+    aws_subnet.cyberark_external,
+    aws_security_group.cyberark_sg,
+    aws_iam_instance_profile.ansible_profile
+  ]
 }
