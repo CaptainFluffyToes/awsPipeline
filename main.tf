@@ -375,7 +375,7 @@ resource "aws_iam_policy" "ansible_access_policy" {
   name        = join("_", [var.name, "policy"])
   path        = "/"
   description = "This policy allows ansible to see the rest of the instances"
-  policy      = file("${path.module}/files/iam/ec2access.json")
+  policy      = "file("${path.module}/files/iam/ec2access.json")"
 }
 
 resource "aws_instance" "ansible_tower" {
