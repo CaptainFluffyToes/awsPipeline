@@ -31,9 +31,114 @@ cat > team <<EOF
 }
 EOF
 TEAMID=$(curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/teams/' --header 'Content-Type: application/json' -d @team | jq .id)
-cat > inventory <<EOF
+cat > inventory_leader <<EOF
 {
-
+    "name": "Conjur_Leader",
+    "description": "All Conjur Master Systems",
+    "organization": $ORGID,
+    "kind": "",
+    "host_filter": null,
+    "variables": "",
+    "insights_credential": null
 }
 EOF
-INVENTORYID=$(curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/teams/' --header 'Content-Type: application/json' -d @team | jq .id)
+INVENTORYIDLEADER=$(curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/inventories/' --header 'Content-Type: application/json' -d @inventory_leader | jq .id)
+cat > inventory_source_leader <<EOF
+{
+    "name": "AWS",
+    "description": "Conjur Leader nodes in AWS",
+    "source": "ec2",
+    "source_path": "",
+    "source_script": null,
+    "source_vars": "---\nvpc_destination_variable: private_ip_address",
+    "credential": null,
+    "source_regions": "all",
+    "instance_filters": "tag-key=role,tag-value=hydration,tag-key=clusterrole,tag-value=leader",
+    "group_by": "",
+    "overwrite": true,
+    "overwrite_vars": false,
+    "custom_virtualenv": null,
+    "timeout": 0,
+    "verbosity": 1,
+    "inventory": $INVENTORYIDLEADER,
+    "update_on_launch": true,
+    "update_cache_timeout": 0,
+    "source_project": null,
+    "update_on_project_update": false
+}
+EOF
+INVENTORYSOURCEIDLEADER=$(curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/inventory_sources/' --header 'Content-Type: application/json' -d @inventory_source_leader | jq .id)
+cat > inventory_standby <<EOF
+{
+    "name": "Conjur_Standbys",
+    "description": "All Conjur Standby Systems",
+    "organization": $ORGID,
+    "kind": "",
+    "host_filter": null,
+    "variables": "",
+    "insights_credential": null
+}
+EOF
+INVENTORYIDSTANDBY=$(curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/inventories/' --header 'Content-Type: application/json' -d @inventory_standby | jq .id)
+cat > inventory_source_standby <<EOF
+{
+    "name": "AWS",
+    "description": "Conjur standby nodes in AWS",
+    "source": "ec2",
+    "source_path": "",
+    "source_script": null,
+    "source_vars": "---\nvpc_destination_variable: private_ip_address",
+    "credential": null,
+    "source_regions": "all",
+    "instance_filters": "tag-key=role,tag-value=hydration,tag-key=clusterrole,tag-value=standby",
+    "group_by": "",
+    "overwrite": true,
+    "overwrite_vars": false,
+    "custom_virtualenv": null,
+    "timeout": 0,
+    "verbosity": 1,
+    "inventory": $INVENTORYIDSTANDBY,
+    "update_on_launch": true,
+    "update_cache_timeout": 0,
+    "source_project": null,
+    "update_on_project_update": false
+}
+EOF
+INVENTORYSOURCEIDSTANDBY=$(curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/inventory_sources/' --header 'Content-Type: application/json' -d @inventory_source_standby | jq .id)
+cat > inventory_follower <<EOF
+{
+    "name": "Conjur_followers",
+    "description": "All Conjur follower Systems",
+    "organization": $ORGID,
+    "kind": "",
+    "host_filter": null,
+    "variables": "",
+    "insights_credential": null
+}
+EOF
+INVENTORYIDFOLLOWER=$(curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/inventories/' --header 'Content-Type: application/json' -d @inventory_follower | jq .id)
+cat > inventory_source_follower <<EOF
+{
+    "name": "AWS",
+    "description": "Conjur follower nodes in AWS",
+    "source": "ec2",
+    "source_path": "",
+    "source_script": null,
+    "source_vars": "---\nvpc_destination_variable: private_ip_address",
+    "credential": null,
+    "source_regions": "all",
+    "instance_filters": "tag-key=role,tag-value=hydration,tag-key=clusterrole,tag-value=follower",
+    "group_by": "",
+    "overwrite": true,
+    "overwrite_vars": false,
+    "custom_virtualenv": null,
+    "timeout": 0,
+    "verbosity": 1,
+    "inventory": $INVENTORYIDFOLLOWER,
+    "update_on_launch": true,
+    "update_cache_timeout": 0,
+    "source_project": null,
+    "update_on_project_update": false
+}
+EOF
+INVENTORYSOURCEIDFOLLOWER=$(curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/inventory_sources/' --header 'Content-Type: application/json' -d @inventory_source_follower | jq .id)
