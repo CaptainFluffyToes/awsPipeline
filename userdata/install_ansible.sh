@@ -9,10 +9,8 @@ sudo sed -i "s,admin_password='',admin_password='Cyberark1',g" ./inventory
 sudo sed -i "s,pg_password='',pg_password='Cyberark1',g" ./inventory
 sudo sed -i "s,rabbitmq_password='',rabbitmq_password='Cyberark1',g" ./inventory
 sudo sh setup.sh
-curl --location --request POST 'https://localhost/api/v2/config/' \
---header 'Content-Type: application/json' \
---header 'Authorization: Basic e3t1c2VybmFtZX19Ont7cGFzc3dvcmR9fQ==' \
---data-raw '{
+until $(curl -ikL --output /dev/null --silent --head --fail https://localhost/api/v2); do printf '.';sleep 5; done
+curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/config/' --header 'Content-Type: application/json' --data-binary '{
     "eula_accepted": "true",
     "company_name": "Cyberark",
     "contact_email": "sales@cyberark.com",
@@ -24,13 +22,12 @@ curl --location --request POST 'https://localhost/api/v2/config/' \
     "license_type": "basic",
     "subscription_name": "Red Hat Ansible Tower, Self-Support (10 Managed Nodes)"
 }'
-
-curl --location --request POST 'https://localhost/api/v2/organizations/' \
---header 'Content-Type: application/json' \
---header 'Authorization: Basic e3t1c2VybmFtZX19Ont7cGFzc3dvcmR9fQ==' \
---data-raw '{
-    "name": "CyberArk_hydration",
-    "description": "Main Demo Organization",
-    "max_hosts": 0,
-    "custom_virtualenv": null
-}'
+ORGID=$(curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/organizations/' --header 'Content-Type: application/json' --data-binary '{"name": "CyberArk_hydration","description": "Main Demo Organization","max_hosts": 0,"custom_virtualenv": null}' | jq .id)
+cat > team <<EOF
+{
+    "name": "security_team",
+    "description": "",
+    "organization": "$ORGID"
+}
+EOF
+TEAMID=$(curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/teams/' --header 'Content-Type: application/json' -d @team | jq .id)
