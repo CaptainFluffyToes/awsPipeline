@@ -10,17 +10,17 @@ variable "aws_pub_key" {
 
 variable "vpc_cidr" {
   type    = string
-  default = "172.86.21.0/26"
+  default = "172.16.20.0/26"
 }
 
 variable "subnet_external_cidr" {
   type    = string
-  default = "172.86.21.0/27"
+  default = "172.16.20.0/27"
 }
 
 variable "subnet_internal_cidr" {
   type    = string
-  default = "172.86.21.32/27"
+  default = "172.16.20.32/27"
 }
 
 variable "name" {

@@ -24,6 +24,8 @@ resource "aws_key_pair" "deployer" {
 #create VPC specific for demo environment
 resource "aws_vpc" "cyberark_vpc" {
   cidr_block = var.vpc_cidr
+  enable_dns_support = true
+  enable_dns_hostnames = true
 
   tags = {
     Name    = var.name,
@@ -381,6 +383,7 @@ resource "aws_iam_policy" "ansible_access_policy" {
 resource "aws_iam_role" "ansible_access_role" {
   name               = join("_", [var.name, "role"])
   assume_role_policy = file("${path.module}/files/iam/assumerolepolicy.json")
+  force_detach_policies = true
 
   tags = {
     Name    = join("_", [var.name, "role"]),
