@@ -1,5 +1,5 @@
 ---
-- hosts: Conjur_Leader 
+- hosts: all 
   tasks:
     - name: Start up dap master
       command: |
