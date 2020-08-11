@@ -142,3 +142,65 @@ cat > inventory_source_follower <<EOF
 }
 EOF
 INVENTORYSOURCEIDFOLLOWER=$(curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/inventory_sources/' --header 'Content-Type: application/json' -d @inventory_source_follower | jq .id)
+cat > project_conjur_leader <<EOF
+{
+    "name": "Conjur_Leader",
+    "description": "This Project will configure conjur leaders",
+    "local_path": "",
+    "scm_type": "git",
+    "scm_url": "https://github.com/CaptainFluffyToes/awsPipeline.git",
+    "scm_branch": "conjur_config",
+    "scm_refspec": "",
+    "scm_clean": false,
+    "scm_delete_on_update": false,
+    "credential": null,
+    "timeout": 0,
+    "organization": $ORGID,
+    "scm_update_on_launch": true,
+    "scm_update_cache_timeout": 0,
+    "allow_override": false,
+    "custom_virtualenv": null
+}
+EOF
+PROJECTCONJURLEADERID=$(curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/projects/' --header 'Content-Type: application/json' -d @project_conjur_leader | jq .id)
+cat > template_conjur_leader <<EOF
+{
+    "name": "Configure_Conjur_Leader",
+    "description": "This template will configure the conjur ",
+    "job_type": "run",
+    "inventory": 4,
+    "project": $PROJECTCONJURLEADERID,
+    "playbook": "conjur.yml,
+    "scm_branch": "",
+    "forks": 0,
+    "limit": "",
+    "verbosity": 0,
+    "extra_vars": "",
+    "job_tags": "",
+    "force_handlers": false,
+    "skip_tags": "",
+    "start_at_task": "",
+    "timeout": 0,
+    "use_fact_cache": false,
+    "host_config_key": "",
+    "ask_scm_branch_on_launch": false,
+    "ask_diff_mode_on_launch": false,
+    "ask_variables_on_launch": false,
+    "ask_limit_on_launch": false,
+    "ask_tags_on_launch": false,
+    "ask_skip_tags_on_launch": false,
+    "ask_job_type_on_launch": false,
+    "ask_verbosity_on_launch": false,
+    "ask_inventory_on_launch": false,
+    "ask_credential_on_launch": false,
+    "survey_enabled": false,
+    "become_enabled": false,
+    "diff_mode": false,
+    "allow_simultaneous": false,
+    "custom_virtualenv": null,
+    "job_slice_count": 1,
+    "webhook_service": null,
+    "webhook_credential": null
+}
+EOF
+TEMPLATECONJURLEADERID=$(curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/job_templates/' --header 'Content-Type: application/json' -d @template_conjur_leader | jq .id)
