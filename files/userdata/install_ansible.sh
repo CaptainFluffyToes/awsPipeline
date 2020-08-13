@@ -38,7 +38,7 @@ cat > inventory_leader <<EOF
     "organization": $ORGID,
     "kind": "",
     "host_filter": null,
-    "variables": "",
+    "variables": "---\nansible_user: ec2-user",
     "insights_credential": null
 }
 EOF
@@ -75,7 +75,7 @@ cat > inventory_standby <<EOF
     "organization": $ORGID,
     "kind": "",
     "host_filter": null,
-    "variables": "",
+    "variables": "---\nansible_user: ec2-user",
     "insights_credential": null
 }
 EOF
@@ -112,7 +112,7 @@ cat > inventory_follower <<EOF
     "organization": $ORGID,
     "kind": "",
     "host_filter": null,
-    "variables": "",
+    "variables": "---\nansible_user: ec2-user",
     "insights_credential": null
 }
 EOF
