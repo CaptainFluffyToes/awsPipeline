@@ -1,14 +1,11 @@
-terraform {
-  backend "remote" {
-    # The name of your Terraform Cloud organization.
-    organization = "captainfluffytoes"
-
-    # The name of the Terraform Cloud workspace to store Terraform state files in.
-    workspaces {
-      name = "awsPipeline"
-    }
-  }
-}
+# terraform {
+#   backend "remote" {
+#     organization = "captainfluffytoes"
+#     workspaces {
+#       name = "awsPipeline"
+#     }
+#   }
+# }
 
 #aws provider
 provider "aws" {
@@ -23,8 +20,8 @@ resource "aws_key_pair" "deployer" {
 
 #create VPC specific for demo environment
 resource "aws_vpc" "cyberark_vpc" {
-  cidr_block = var.vpc_cidr
-  enable_dns_support = true
+  cidr_block           = var.vpc_cidr
+  enable_dns_support   = true
   enable_dns_hostnames = true
 
   tags = {
@@ -75,6 +72,7 @@ resource "aws_subnet" "cyberark_external" {
   depends_on = [aws_internet_gateway.cyberark_igw]
 }
 
+#create nat gateway for private instances
 resource "aws_nat_gateway" "cyberark_ngw" {
   allocation_id = aws_eip.cyberark_eip.id
   subnet_id     = aws_subnet.cyberark_external.id
@@ -381,8 +379,8 @@ resource "aws_iam_policy" "ansible_access_policy" {
 }
 
 resource "aws_iam_role" "ansible_access_role" {
-  name               = join("_", [var.name, "role"])
-  assume_role_policy = file("${path.module}/files/iam/assumerolepolicy.json")
+  name                  = join("_", [var.name, "role"])
+  assume_role_policy    = file("${path.module}/files/iam/assumerolepolicy.json")
   force_detach_policies = true
 
   tags = {
@@ -430,6 +428,18 @@ resource "aws_instance" "ansible_tower" {
     role        = var.role,
     company     = var.company,
     clusterrole = "ansible"
+  }
+
+  provisioner "file" {
+    source      = var.aws_private_key
+    destination = "~/aws"
+
+    connection {
+      type        = "ssh"
+      user        = "centos"
+      host        = self.public_ip
+      private_key = file(var.aws_private_key)
+    }
   }
 
   depends_on = [
