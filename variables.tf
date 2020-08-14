@@ -5,7 +5,12 @@ variable "region" {
 
 variable "aws_pub_key" {
   type    = string
-  default = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC/hR+nultsHekmpfJFAvwgy4SvcQfLQuSM8pBUChRFlzsh0pnvkt/YpgYojlbjKGDpmb9Ay5SFS0DEaj+c5qnIQw4SYrhWBmBLOgDToYD5fVayA4nAzhA5n5YyhBnMxbUAoOvyOj2XgEaIVRw23AtezWLB9CjijJusccVF+XQ6ChRJFLa92lCFXTORMk22+5ASW5Wcv6xdGwuLAnX8N0XMl6iY7ntRY0NemNYDAKLznonERywdopKC2UMsuQ/YlWna98md6SlcsAokRvSoWESK5DwcqYmeI2NKUrV7E/dtX1P2VQF6YJ5/nBUA2QKeYptruz1s1FdLhIb9a9ixW7I6irQz9hzIPebGUKaC1zS+31a5vlqAourzRUMhiIySXnHgJhnQCzGJQE0ApMaC+m2wC6L+lRLt2cUpvpOf7vokEVUUat4HbrhPEUWNNntgfrR8Kvm6nPyKiLu/1eniY7CMuXy9BCmHzxvkgUzqTTv4I6GvEChT+/bOjkqFYn+gjnk="
+  default = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDdlEH1MlCX5yn5IzbjSH07ieBtpBMzNeNkYCI92Tyt0hyB+mnvK2VlA/Y2Nz00Vb5HsqPdmyEtoBPjo6CydMuCF/K92CoJ1HZh0tvT+7DciS3qyxlVLeppk4MkCGwMpQeaqkZTKKCDMVP/og727pT4tByFHxMaMooNQzASnVInKJIAyui2HBQ3fefK9l8nIpHg2tI1A6TiGwne5z6KPMAbx33rdW8IJAOmRPbNGyKL8MH2lOl9r/1Ha6TBlBVTasyDUGoYRn6DBgmapM+DfxCO13tUBfmhtAE23lvGLide0xc7AdxaoVAQrZ3M6bcnzBtBR5KVYR1MI5zyJPw5qzClFRNRpIobfB++rvGVChNo6ds0H2mYF4m3XRbZUg0INwz8cJnhDoJ/dBUsSPa5iWimP89lO11HW1Maj1/Q8qIU/V9j/hcXxmB9PtUSUK+nuhHZTQtPx60jg2Ej9PP7yT98bYgVOlPLPhuwoXcA50qXr2+Rns1rhWJ+iO6VntFddzE="
+}
+
+variable "aws_private_key" {
+  type    = string
+  default = "~/.ssh/cyberark_hydration"
 }
 
 variable "vpc_cidr" {
