@@ -26,11 +26,24 @@ ORGID=$(curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/orga
 cat > team <<EOF
 {
     "name": "security_team",
-    "description": "",
+    "description": "Team in charge of all credentials",
     "organization": "$ORGID"
 }
 EOF
 TEAMID=$(curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/teams/' --header 'Content-Type: application/json' -d @team | jq .id)
+PRIV_KEY=$(cat ~/aws)
+cat > aws_cred <<EOF
+{
+    "name": "aws_private_key",
+    "description": "Private key to connect to aws instances",
+    "organization": $ORGID,
+    "credential_type": 1,
+    "inputs": {"ssh_key_data":"$PRIV_KEY"},
+    "user": null,
+    "team": $TEAMID
+}
+EOF
+CREDID=$(curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/credentials/' --header 'Content-Type: application/json' -d @aws_cred | jq .id)
 cat > inventory_leader <<EOF
 {
     "name": "Conjur_Leader",
@@ -204,3 +217,10 @@ cat > template_conjur_leader <<EOF
 }
 EOF
 TEMPLATECONJURLEADERID=$(curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/job_templates/' --header 'Content-Type: application/json' -d @template_conjur_leader | jq .id)
+cat > template_cred <<EOF
+{
+    "associate": true,
+    "id": $CREDID
+}
+EOF
+OUTPUT=$(curl -k -u admin:Cyberark1 --request POST "https://localhost/api/v2/job_templates/$TEMPLATECONJURLEADERID/credentials/" --header 'Content-Type: application/json' -d @template_cred | jq)
