@@ -14,6 +14,8 @@ name = "cyberark_hydration"
 
 ansible_name = "ansible"
 
+repo_name = "conjur_policy"
+
 conjur_master_name = "conjur_master"
 
 conjur_follower_name = "conjur_follower"

@@ -448,3 +448,15 @@ resource "aws_instance" "ansible_tower" {
     aws_iam_instance_profile.ansible_profile
   ]
 }
+
+resource "aws_codecommit_repository" "conjur_policy" {
+  repository_name = "conjur_policy"
+  description     = "This repo holds all of the conjur policy"
+
+  tags = {
+    Name        = join("_", [var.name, var.repo_name]),
+    role        = var.role,
+    company     = var.company,
+    clusterrole = "policy"
+  }
+}

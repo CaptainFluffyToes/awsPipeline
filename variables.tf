@@ -38,6 +38,11 @@ variable "ansible_name" {
   default = "ansible"
 }
 
+variable "repo_name" {
+  type    = string
+  default = "conjur_policy"
+}
+
 variable "conjur_master_name" {
   type    = string
   default = "conjur_master"
