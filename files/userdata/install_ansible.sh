@@ -10,6 +10,7 @@ sudo sed -i "s,pg_password='',pg_password='Cyberark1',g" ./inventory
 sudo sed -i "s,rabbitmq_password='',rabbitmq_password='Cyberark1',g" ./inventory
 sudo sh setup.sh
 until $(curl -ikL --output /dev/null --silent --head --fail https://localhost/api/v2); do printf '.';sleep 5; done
+#Configure License
 curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/config/' --header 'Content-Type: application/json' --data-binary '{
     "eula_accepted": "true",
     "company_name": "Cyberark",
@@ -22,7 +23,9 @@ curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/config/' --h
     "license_type": "basic",
     "subscription_name": "Red Hat Ansible Tower, Self-Support (10 Managed Nodes)"
 }'
+#Configure Organization
 ORGID=$(curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/organizations/' --header 'Content-Type: application/json' --data-binary '{"name": "CyberArk_hydration","description": "Main Demo Organization","max_hosts": 0,"custom_virtualenv": null}' | jq .id)
+#Configure Team in Organization
 cat > team <<EOF
 {
     "name": "security_team",
@@ -31,6 +34,8 @@ cat > team <<EOF
 }
 EOF
 TEAMID=$(curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/teams/' --header 'Content-Type: application/json' -d @team | jq .id)
+rm team
+#Configure AWS private Key
 PRIV_KEY=$(cat ~/aws)
 cat > aws_cred <<EOF
 {
@@ -44,6 +49,8 @@ cat > aws_cred <<EOF
 }
 EOF
 CREDID=$(curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/credentials/' --header 'Content-Type: application/json' -d @aws_cred | jq .id)
+rm aws_cred
+#Configure invetory for leader instance
 cat > inventory_leader <<EOF
 {
     "name": "Conjur_Leader",
@@ -56,6 +63,8 @@ cat > inventory_leader <<EOF
 }
 EOF
 INVENTORYIDLEADER=$(curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/inventories/' --header 'Content-Type: application/json' -d @inventory_leader | jq .id)
+rm inventory_leader
+#Configure inventory source for leader instance
 cat > inventory_source_leader <<EOF
 {
     "name": "AWS",
@@ -81,6 +90,8 @@ cat > inventory_source_leader <<EOF
 }
 EOF
 INVENTORYSOURCEIDLEADER=$(curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/inventory_sources/' --header 'Content-Type: application/json' -d @inventory_source_leader | jq .id)
+rm inventory_source_leader
+#Configure inventory for standby instances
 cat > inventory_standby <<EOF
 {
     "name": "Conjur_Standbys",
@@ -93,6 +104,8 @@ cat > inventory_standby <<EOF
 }
 EOF
 INVENTORYIDSTANDBY=$(curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/inventories/' --header 'Content-Type: application/json' -d @inventory_standby | jq .id)
+rm inventory_standby
+#Configure inventory source for standby instances
 cat > inventory_source_standby <<EOF
 {
     "name": "AWS",
@@ -118,6 +131,8 @@ cat > inventory_source_standby <<EOF
 }
 EOF
 INVENTORYSOURCEIDSTANDBY=$(curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/inventory_sources/' --header 'Content-Type: application/json' -d @inventory_source_standby | jq .id)
+rm inventory_source_standby
+#Configure inventory for follower instances
 cat > inventory_follower <<EOF
 {
     "name": "Conjur_followers",
@@ -130,6 +145,8 @@ cat > inventory_follower <<EOF
 }
 EOF
 INVENTORYIDFOLLOWER=$(curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/inventories/' --header 'Content-Type: application/json' -d @inventory_follower | jq .id)
+rm inventory_follower
+#Configure inventory source for follower instances
 cat > inventory_source_follower <<EOF
 {
     "name": "AWS",
@@ -155,14 +172,17 @@ cat > inventory_source_follower <<EOF
 }
 EOF
 INVENTORYSOURCEIDFOLLOWER=$(curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/inventory_sources/' --header 'Content-Type: application/json' -d @inventory_source_follower | jq .id)
-cat > project_conjur_leader <<EOF
+rm inventory_source_follower
+#Configure project
+SCM_BRANCH="conjur_config"
+cat > project_conjur <<EOF
 {
-    "name": "Conjur_Leader",
-    "description": "This Project will configure conjur leaders",
+    "name": "Conjur",
+    "description": "This Project will configure conjur instances.",
     "local_path": "",
     "scm_type": "git",
     "scm_url": "https://github.com/CaptainFluffyToes/awsPipeline.git",
-    "scm_branch": "conjur_config",
+    "scm_branch": "$SCM_BRANCH",
     "scm_refspec": "",
     "scm_clean": false,
     "scm_delete_on_update": false,
@@ -175,14 +195,23 @@ cat > project_conjur_leader <<EOF
     "custom_virtualenv": null
 }
 EOF
-PROJECTCONJURLEADERID=$(curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/projects/' --header 'Content-Type: application/json' -d @project_conjur_leader | jq .id)
+PROJECTCONJURID=$(curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/projects/' --header 'Content-Type: application/json' -d @project_conjur | jq .id)
+rm project_conjur
+STATUS="null"
+while [[ "$STATUS" = "null" ]]
+do
+    STATUS=$(curl -sk -u admin:Cyberark1 --request GET "https://localhost/api/v2/projects/$PROJECTCONJURID/" | jq .last_job_run)
+    echo "Successful!"
+    sleep 1
+done
+#Configure template for leader configuration
 cat > template_conjur_leader <<EOF
 {
     "name": "Configure_Conjur_Leader",
-    "description": "This template will configure the conjur ",
+    "description": "This template will configure the conjur leader instance.",
     "job_type": "run",
     "inventory": $INVENTORYIDLEADER,
-    "project": $PROJECTCONJURLEADERID,
+    "project": $PROJECTCONJURID,
     "playbook": "conjur_leader.yml",
     "scm_branch": "",
     "forks": 0,
@@ -216,11 +245,105 @@ cat > template_conjur_leader <<EOF
     "webhook_credential": null
 }
 EOF
+#Add credentials to the template
 TEMPLATECONJURLEADERID=$(curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/job_templates/' --header 'Content-Type: application/json' -d @template_conjur_leader | jq .id)
+rm template_conjur_leader
 cat > template_cred <<EOF
 {
     "associate": true,
     "id": $CREDID
 }
 EOF
-OUTPUT=$(curl -k -u admin:Cyberark1 --request POST "https://localhost/api/v2/job_templates/$TEMPLATECONJURLEADERID/credentials/" --header 'Content-Type: application/json' -d @template_cred | jq)
+OUTPUTID=$(curl -k -u admin:Cyberark1 --request POST "https://localhost/api/v2/job_templates/$TEMPLATECONJURLEADERID/credentials/" --header 'Content-Type: application/json' -d @template_cred | jq)
+#Configure template for follower configuration
+cat > template_conjur_follower <<EOF
+{
+    "name": "Configure_Conjur_Follower",
+    "description": "This template will configure the conjur follower instances.",
+    "job_type": "run",
+    "inventory": $INVENTORYIDFOLLOWER,
+    "project": $PROJECTCONJURID,
+    "playbook": "conjur_follower.yml",
+    "scm_branch": "",
+    "forks": 0,
+    "limit": "",
+    "verbosity": 0,
+    "extra_vars": "",
+    "job_tags": "",
+    "force_handlers": false,
+    "skip_tags": "",
+    "start_at_task": "",
+    "timeout": 0,
+    "use_fact_cache": false,
+    "host_config_key": "",
+    "ask_scm_branch_on_launch": false,
+    "ask_diff_mode_on_launch": false,
+    "ask_variables_on_launch": false,
+    "ask_limit_on_launch": false,
+    "ask_tags_on_launch": false,
+    "ask_skip_tags_on_launch": false,
+    "ask_job_type_on_launch": false,
+    "ask_verbosity_on_launch": false,
+    "ask_inventory_on_launch": false,
+    "ask_credential_on_launch": false,
+    "survey_enabled": false,
+    "become_enabled": false,
+    "diff_mode": false,
+    "allow_simultaneous": false,
+    "custom_virtualenv": null,
+    "job_slice_count": 1,
+    "webhook_service": null,
+    "webhook_credential": null
+}
+EOF
+#Add credentials to the template
+TEMPLATECONJURFOLLOWERID=$(curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/job_templates/' --header 'Content-Type: application/json' -d @template_conjur_follower | jq .id)
+rm template_conjur_follower
+OUTPUTID=$(curl -k -u admin:Cyberark1 --request POST "https://localhost/api/v2/job_templates/$TEMPLATECONJURFOLLOWERID/credentials/" --header 'Content-Type: application/json' -d @template_cred | jq)
+#Configure template for standby configuration
+cat > template_conjur_standby <<EOF
+{
+    "name": "Configure_Conjur_Standby",
+    "description": "This template will configure the conjur follower instances.",
+    "job_type": "run",
+    "inventory": $INVENTORYIDSTANDBY,
+    "project": $PROJECTCONJURID,
+    "playbook": "conjur_standby.yml",
+    "scm_branch": "",
+    "forks": 0,
+    "limit": "",
+    "verbosity": 0,
+    "extra_vars": "",
+    "job_tags": "",
+    "force_handlers": false,
+    "skip_tags": "",
+    "start_at_task": "",
+    "timeout": 0,
+    "use_fact_cache": false,
+    "host_config_key": "",
+    "ask_scm_branch_on_launch": false,
+    "ask_diff_mode_on_launch": false,
+    "ask_variables_on_launch": false,
+    "ask_limit_on_launch": false,
+    "ask_tags_on_launch": false,
+    "ask_skip_tags_on_launch": false,
+    "ask_job_type_on_launch": false,
+    "ask_verbosity_on_launch": false,
+    "ask_inventory_on_launch": false,
+    "ask_credential_on_launch": false,
+    "survey_enabled": false,
+    "become_enabled": false,
+    "diff_mode": false,
+    "allow_simultaneous": false,
+    "custom_virtualenv": null,
+    "job_slice_count": 1,
+    "webhook_service": null,
+    "webhook_credential": null
+}
+EOF
+#Add credentials to the template
+TEMPLATECONJURSTANDBYID=$(curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/job_templates/' --header 'Content-Type: application/json' -d @template_conjur_standby | jq .id)
+rm template_conjur_standby
+OUTPUTID=$(curl -k -u admin:Cyberark1 --request POST "https://localhost/api/v2/job_templates/$TEMPLATECONJURSTANDBYID/credentials/" --header 'Content-Type: application/json' -d @template_cred | jq)
+#Launch conjur leader job template
+curl -sk -u admin:Cyberark1 --request POST "https://localhost/api/v2/job_templates/$TEMPLATECONJURLEADERID/launch/"
