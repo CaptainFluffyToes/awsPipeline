@@ -4,6 +4,9 @@
     - name: Start up dap master
       command: |
         "docker container run -d --name {{ conjur_leader_name }} --restart=always --security-opt=seccomp:unconfined -p 443:443 -p 5432:5432 -p 1999:1999 {{ conjur_image_name }}"
+
+    - name: Configure Dap master
+      command: |
         "docker exec {{ conjur_leader_name }} evoke configure master --accept-eula --hostname {{ conjur_leader_name }} --admin-password {{ conjur_admin_password }} {{ conjur_company }}"
   vars:
     - conjur_image_name: 'captainfluffytoes/dap:latest'
