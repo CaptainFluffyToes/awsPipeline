@@ -36,7 +36,7 @@ EOF
 TEAMID=$(curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/teams/' --header 'Content-Type: application/json' -d @team | jq .id)
 rm team
 #Configure AWS private Key
-PRIV_KEY=$(cat ~/aws)
+PRIV_KEY=$(cat /home/centos/aws)
 cat > aws_cred <<EOF
 {
     "name": "aws_private_key",
