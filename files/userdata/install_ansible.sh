@@ -174,7 +174,7 @@ EOF
 INVENTORYSOURCEIDFOLLOWER=$(curl -k -u admin:Cyberark1 --request POST 'https://localhost/api/v2/inventory_sources/' --header 'Content-Type: application/json' -d @inventory_source_follower | jq .id)
 rm inventory_source_follower
 #Configure project
-SCM_BRANCH="conjur_config"
+SCM_BRANCH="master"
 cat > project_conjur <<EOF
 {
     "name": "Conjur",
