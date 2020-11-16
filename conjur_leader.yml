@@ -31,7 +31,9 @@
     - name: Configure Dap master
       shell: |
         "docker exec {{ conjur_leader_name }} evoke configure master --accept-eula --hostname {{ conjur_leader_name }} --admin-password {{ conjur_admin_password }} {{ conjur_company }}"
-        
+      args:
+        executable: /bin/bash
+
   vars:
     - conjur_image_name: 'captainfluffytoes/dap:latest'
     - conjur_leader_name: 'conjurleader'
