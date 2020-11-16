@@ -40,3 +40,4 @@
     - conjur_leader_name: 'conjurleader'
     - conjur_admin_password: 'Cyberark123!'
     - conjur_company: 'cyberark'
+    - ansible_python_interpreter: /usr/bin/python3
