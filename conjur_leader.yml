@@ -1,13 +1,40 @@
 ---
 - hosts: all 
   tasks:
-    - name: Start up dap master
-      command: |
-        "docker container run -d --name {{ conjur_leader_name }} --restart=always --security-opt=seccomp:unconfined -p 443:443 -p 5432:5432 -p 1999:1999 {{ conjur_image_name }}"
+    # - name: Start up dap master
+    #   command: |
+    #     "docker container run -d --name {{ conjur_leader_name }} --restart=always --security-opt=seccomp:unconfined -p 443:443 -p 5432:5432 -p 1999:1999 {{ conjur_image_name }}"
 
-    - name: Configure Dap master
-      command: |
-        "docker exec {{ conjur_leader_name }} evoke configure master --accept-eula --hostname {{ conjur_leader_name }} --admin-password {{ conjur_admin_password }} {{ conjur_company }}"
+    # - name: Configure Dap master
+    #   command: |
+    #     "docker exec {{ conjur_leader_name }} evoke configure master --accept-eula --hostname {{ conjur_leader_name }} --admin-password {{ conjur_admin_password }} {{ conjur_company }}"
+    - name: Start master container
+      docker_container:
+        name: "{{ conjur_leader_name }}"
+        image: "{{ conjur_image_name }}"
+        state: started
+        restart_policy: unless-stopped
+        security_opts:
+          - seccomp:unconfined
+        pull: yes
+        exposed_ports:
+          - 443
+          - 444
+          - 1999
+          - 5432
+        published_ports:
+          - "443:443"
+          - "444:444"
+          - "1999:1999"
+          - "5432:5432"
+        log_driver: journald
+        volumes:
+          - "/opt/cyberark/dap/configuration:/opt/cyberark/dap/configuration:rw"
+          - "/opt/cyberark/dap/security:/opt/cyberark/dap/security:rw"
+          - "/opt/cyberark/dap/backups:/opt/conjur/backup:rw"
+          - "/opt/cyberark/dap/seeds:/opt/cyberark/dap/seeds:rw"
+          - "/opt/cyberark/dap/logs:/var/log/conjur:rw"
+
   vars:
     - conjur_image_name: 'captainfluffytoes/dap:latest'
     - conjur_leader_name: 'conjurleader'
