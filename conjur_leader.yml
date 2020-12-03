@@ -37,6 +37,6 @@
   vars:
     - conjur_image_name: 'captainfluffytoes/dap:latest'
     - conjur_leader_name: 'conjurleader'
-    - conjur_admin_password: 'Cyberark123!'
+    - conjur_admin_password: 'CyberArk123!'
     - conjur_company: 'cyberark'
     - ansible_python_interpreter: /usr/bin/python3
